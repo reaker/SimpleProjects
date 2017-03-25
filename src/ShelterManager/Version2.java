@@ -1,10 +1,8 @@
 package ShelterManager;
 
-import oracle.jrockit.jfr.JFR;
-
 import javax.swing.*;
+import java.io.*;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 
 /**
  Created by sebastian on 2017-03-22.
@@ -12,7 +10,7 @@ Wariant 2
 To samo co poprzednio plus:
  - Zamiast programu mamy proste UI
  - Lista zwierząt jest zapisywana do pliku tekstowego lub bazy danych
-  - Powyłączeniu programu i ponownym odpaleniu ma zostać załądowany ostatni stan z bazy/pliku
+ - Po wyłączeniu programu i ponownym odpaleniu ma zostać załądowany ostatni stan z bazy/pliku
 
  Wariant 1
  Program, w którym dodajemy do bazy/usuwamy z bazy zwierzęta oraz sprawdzamy stan schroniska (pełne, przepełnione, puste etc.)
@@ -25,32 +23,72 @@ To samo co poprzednio plus:
 
 public class Version2 {
 
+    public static void save(int number){
+        //funkcja zrobiona po to aby szybciej w kodzie zapisywać plik
+        BufferedWriter out = null;
+        try {
+            out = new BufferedWriter(new FileWriter("baza.txt"));
+            String str= Integer.toString(number);
+            System.out.println(str);
+            out.write(str);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Scanner read(String fileName){
+        //szybsze wczytywanie pliku w kodzie
+        Scanner scan=null;
+        try {
+            scan= new Scanner(new File(fileName));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        };
+        return scan;
+    }
+
     public static void main(String[] args) {
 
         int capacity=100;
         int actualAmount=0;
         int amount=0;
 
-        String msg="Ilość miejsc w schronisku: "+capacity + "\nCo zrobić?";
+        String fname= "baza.txt";
+
+        Scanner in= read(fname);
+
+        //odczytujemy zawartość pliku
+        while (in.hasNext()){
+            actualAmount=in.nextInt();
+        }
+
         String[] opcje =  { "Dodaj", "Usuń", "Status"};
-
-
 
         while (true) {
 
             try {
+                //MENU
+                String msg="Miejsc w schronisku: "+capacity + "\nIlość zwierzaków: "+actualAmount+"\nCo zrobić?";
                 int chooser = JOptionPane.showOptionDialog(null, msg,"Schelter Manager", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,null, opcje, opcje[0]);
 
+                // Case'y dla trzech wyborów
+                if (chooser<0){return;}
                 switch (chooser) {
+                    //dla DODAJ
                     case 0: {
                         amount= Integer.parseInt(JOptionPane.showInputDialog(null,"Ile zwierzaków dodać? Wpisz liczbę: ","Schelter Manager",JOptionPane.DEFAULT_OPTION).trim());
+
                         if (amount>=0) {
                             if (actualAmount + amount > capacity) {
                                 JOptionPane.showMessageDialog(null,"Nie można dodać tylu zwierzaków!","Schelter Manager",JOptionPane.DEFAULT_OPTION);
                                 break;
-                            } else {
+                            }
+                            else {
                                 actualAmount += amount;
                                 JOptionPane.showMessageDialog(null,"Poprawnie dodano. Liczba zwiarzaków w schronisku: " + actualAmount,"Schelter Manager",JOptionPane.DEFAULT_OPTION);
+                                save(actualAmount);
+                                System.out.println(actualAmount+"  "+ amount);
                                 break;
                             }
                         }
@@ -58,6 +96,7 @@ public class Version2 {
                         break;
                     }
 
+                    // USUŃ
                     case 1: {
                         amount= Integer.parseInt(JOptionPane.showInputDialog(null,"Ile zwierzaków odjąć? Wpisz liczbę: ","Schelter Manager",JOptionPane.DEFAULT_OPTION).trim());
                         if (amount >= 0) {
@@ -67,6 +106,7 @@ public class Version2 {
                             } else {
                                 actualAmount -= amount;
                                 JOptionPane.showMessageDialog(null,"Poprawnie odjęto. Liczba zwiarzaków w schronisku: " + actualAmount,"Schelter Manager",JOptionPane.DEFAULT_OPTION);
+                                save(actualAmount);
                                 break;
                             }
                         }
@@ -74,6 +114,7 @@ public class Version2 {
                         break;
                     }
 
+                    //STATUS
                     case 2: {
                         JOptionPane.showMessageDialog(null,"Liczba zwierzaków w schronisku: " + actualAmount + "\nPojemność schroniska: " + capacity,"Schelter Manager",JOptionPane.DEFAULT_OPTION);
                          break;
