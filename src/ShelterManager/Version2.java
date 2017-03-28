@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.Scanner;
 
 /**
+ *
  Created by sebastian on 2017-03-22.
 Wariant 2
 To samo co poprzednio plus:
@@ -23,9 +24,9 @@ To samo co poprzednio plus:
 
 public class Version2 {
 
-    public static void save(int number){
+    private static void save(int number){
         //funkcja zrobiona po to aby szybciej w kodzie zapisywać plik
-        BufferedWriter out = null;
+        BufferedWriter out;
         try {
             out = new BufferedWriter(new FileWriter("baza.txt"));
             String str= Integer.toString(number);
@@ -37,14 +38,14 @@ public class Version2 {
         }
     }
 
-    public static Scanner read(String fileName){
+    private static Scanner read(String fileName){
         //szybsze wczytywanie pliku w kodzie
         Scanner scan=null;
         try {
             scan= new Scanner(new File(fileName));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        };
+        }
         return scan;
     }
 
@@ -52,7 +53,7 @@ public class Version2 {
 
         int capacity=100;
         int actualAmount=0;
-        int amount=0;
+        int amount;
 
         String fname= "baza.txt";
 
