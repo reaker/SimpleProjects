@@ -17,12 +17,13 @@ Program, w którym dodajemy do bazy/usuwamy z bazy zwierzęta oraz sprawdzamy st
 
 public class Version1 {
 
+
     public static void main(String[] args) {
 
         int capacity=100;
         int actualAmount=0;
         int chooser;
-        int amount=0;
+        int amount;
         Scanner scan= new Scanner(System.in);
         System.out.println("Ilość miejsc w schronisku: "+capacity);
 
