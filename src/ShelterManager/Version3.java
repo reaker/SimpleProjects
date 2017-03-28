@@ -1,5 +1,7 @@
 package ShelterManager;
 
+import org.omg.CORBA.PRIVATE_MEMBER;
+
 import javax.swing.*;
 import java.io.*;
 import java.sql.*;
@@ -13,7 +15,8 @@ import java.util.Scanner;
 - Gdy schronisko ma mniej niż 5 wolnych miejsc wysyłany jest email infomarcyjny do osób pracujacych w schronisku
 - Możliwość edycji poszczególnych zwierząt. Dodanie pól takich jak np. stan zdrowia, płeć itp.
 
- + od samego siebie: zmieniam dostęp z pliku na bazę danych SQL
+ + od samego siebie: zmieniam dostęp z pliku na bazę danych SQL.
+ // Nie jest to doskonała wersja tego projektu, ale wszystkie funkcjonalności SĄ :)
 
  Wariant 2
  To samo co poprzednio plus:
@@ -32,36 +35,19 @@ import java.util.Scanner;
 
 public class Version3 {
 
-    private  static void save(int number){
-        //faster saving file in code
-        BufferedWriter out;
-        try {
-            out = new BufferedWriter(new FileWriter("baza.txt"));
-            String str= Integer.toString(number);
-            out.write(str);
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static Scanner read(String fileName){
-        //f faster loading file in code
-        Scanner scan=null;
-        try {
-            scan= new Scanner(new File(fileName));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return scan;
-    }
-
     private static void insertSQL(Statement statement, String animalName, String breed, char sex, int health) throws SQLException{
         statement.executeUpdate("Insert into ShelterManager2 values(null,'"+animalName+"','"+breed+"','"+sex+"'," +health+")");
     }
 
-    public static void deleteSQL(Statement statement, int ID) throws SQLException{
+    private static void deleteSQL(Statement statement, int ID) throws SQLException{
         statement.executeUpdate("Delete from ShelterManager2 where ID="+ID+";");
+    }
+
+    private static int countSQL(Statement statement) throws SQLException {
+        ResultSet rs = statement.executeQuery("select * from ShelterManager2");
+        int count = 0;
+        while (rs.next()) count++;
+        return count;
     }
 
     private static void statusSQL(Statement statement, Connection con) throws SQLException{
@@ -73,10 +59,7 @@ public class Version3 {
         frame.setVisible(true);
     }
 
-
-
     public static void main(String[] args)  throws SQLException{
-
 
         //connecting with database
         String driverName = "com.mysql.jdbc.Driver";
@@ -119,21 +102,15 @@ public class Version3 {
             for (String s : st) {statement.executeUpdate(s);}
         }
 
-        int capacity=100, actualAmount=0, amount;
+        int capacity=100, amount;
+        int actualAmount=countSQL(statement);
 
         // animal data
         String animalName, breed;
         char sex;
-        int health;
+        int id,health;
 
         String fname= "baza.txt";
-
-        Scanner in= read(fname);
-
-        // reading file
-        while (in.hasNext()){
-            actualAmount=in.nextInt();
-        }
 
         String[] opcje =  { "Dodaj", "Usuń", "Status"};
 
@@ -174,29 +151,24 @@ public class Version3 {
                             }
                         }
 
-
                     // Delete
                     case 1: {
-                        amount= Integer.parseInt(JOptionPane.showInputDialog(null,"Ile zwierzaków odjąć? Wpisz liczbę: ","Manager schroniska",JOptionPane.INFORMATION_MESSAGE).trim());
-                        if (amount >= 0) {
-                            if (actualAmount - amount < 0) {
-                                JOptionPane.showMessageDialog(null,"Nie ma tylu zwierzaków w schronisku!","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
-                                break;
-                            } else {
-                                actualAmount -= amount;
-                                JOptionPane.showMessageDialog(null,"Poprawnie odjęto. Liczba zwiarzaków w schronisku: " + actualAmount,"Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
-                                save(actualAmount);
-                                break;
-                            }
-                        }
-                        else JOptionPane.showMessageDialog(null,"Podałeś liczbę ujemną! :)","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
-                        break;
+                        id = Integer.parseInt(JOptionPane.showInputDialog(null, "Wpisz ID zwierzaka. ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim());
+
+                        int countBefore=countSQL(statement);
+                        deleteSQL(statement,id);
+                        int countAfter=countSQL(statement);
+
+                        if (countAfter==countBefore) {JOptionPane.showMessageDialog(null,"Nie ma zwierzaka o takim ID.","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);break;}
+                            actualAmount--;
+                            JOptionPane.showMessageDialog(null,"Poprawnie odjęto. Liczba zwiarzaków w schronisku: " + actualAmount,"Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
+                            break;
                     }
 
                     // STATUS
                     case 2: {
                         statusSQL(statement,con);
-                        JOptionPane.showMessageDialog(null,"Liczba zwierzaków w schronisku: " + actualAmount + "\nPojemność schroniska: " + capacity,"Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null,"Liczba zwierzaków w schronisku: " + countSQL(statement)+ "\n Pojemność schroniska: " + capacity,"Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                         break;
                     }
                     default:
