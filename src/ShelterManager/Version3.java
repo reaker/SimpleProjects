@@ -4,16 +4,11 @@ import javax.swing.*;
 import java.io.*;
 import java.sql.*;
 import java.util.Scanner;
-import java.awt.*;
-import java.sql.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
-
 /**
  Created by sebastian on 2017-03-25.
 
  Wariant 3
+ Staralem sie kod pisac po angielsku a program po polsku :)
  To samo co poprzednio plus:
 - Gdy schronisko ma mniej niż 5 wolnych miejsc wysyłany jest email infomarcyjny do osób pracujacych w schronisku
 - Możliwość edycji poszczególnych zwierząt. Dodanie pól takich jak np. stan zdrowia, płeć itp.
@@ -38,7 +33,7 @@ import javax.swing.table.*;
 public class Version3 {
 
     private  static void save(int number){
-        //funkcja zrobiona po to aby szybciej w kodzie zapisywać plik
+        //faster saving file in code
         BufferedWriter out;
         try {
             out = new BufferedWriter(new FileWriter("baza.txt"));
@@ -51,7 +46,7 @@ public class Version3 {
     }
 
     private static Scanner read(String fileName){
-        //szybsze wczytywanie pliku w kodzie
+        //f faster loading file in code
         Scanner scan=null;
         try {
             scan= new Scanner(new File(fileName));
@@ -72,7 +67,7 @@ public class Version3 {
     private static void statusSQL(Statement statement, Connection con) throws SQLException{
        // new TableFromMySqlDatabase(con);
         TableFromMySqlDatabase frame = new TableFromMySqlDatabase(con);
-        frame.setTitle("Shelter Manager - Database");
+        frame.setTitle("Manager Schroniska - baza danych");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
@@ -83,11 +78,11 @@ public class Version3 {
     public static void main(String[] args)  throws SQLException{
 
 
-        //połączenie z bazą danych
+        //connecting with database
         String driverName = "com.mysql.jdbc.Driver";
         String url = "jdbc:mysql://wijas.eu:3306/reaker_wijas";
         String uid = "reaker_wijas";
-        String pwd = "Mercedes1986";
+        String pwd = "123";
         Connection con=null;
 
         try {
@@ -101,7 +96,7 @@ public class Version3 {
             System.exit(1);
         }
 
-        //tworzenie tabel
+        //creating tables
         Statement statement;
 
         statement = con.createStatement();
@@ -124,14 +119,10 @@ public class Version3 {
             for (String s : st) {statement.executeUpdate(s);}
         }
 
-        int capacity=100;
-        int actualAmount=0;
-        int amount;
+        int capacity=100, actualAmount=0, amount;
 
-        //Dane zwierzaka
-        int id=0;
-        String animalName;
-        String breed;
+        // animal data
+        String animalName, breed;
         char sex;
         int health;
 
@@ -139,7 +130,7 @@ public class Version3 {
 
         Scanner in= read(fname);
 
-        //odczytujemy zawartość pliku
+        // reading file
         while (in.hasNext()){
             actualAmount=in.nextInt();
         }
@@ -151,24 +142,24 @@ public class Version3 {
             try {
                 //MENU
                 String msg="Miejsc w schronisku: "+capacity + "\nIlość zwierzaków: "+actualAmount+"\nCo zrobić?";
-                int chooser = JOptionPane.showOptionDialog(null, msg,"Schelter Manager", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,null, opcje, opcje[0]);
+                int chooser = JOptionPane.showOptionDialog(null, msg,"Manager schroniska", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,null, opcje, opcje[0]);
 
                 // Case'y dla trzech wyborów
                 if (chooser<0){return;}
                 switch (chooser) {
-                    //DODAJ
+                    // Add
                     case 0: {
                         if ((actualAmount+1)<capacity) {
-                            animalName = JOptionPane.showInputDialog(null, "Wpisz nazwę zwierzaka. ", "Schelter Manager", JOptionPane.INFORMATION_MESSAGE).trim();
-                            breed = JOptionPane.showInputDialog(null, "Wpisz rasę zwierzęcia", "Schelter Manager", JOptionPane.INFORMATION_MESSAGE).trim();
-                            sex = JOptionPane.showInputDialog(null, "Jakiej płci jest zwierzę? Wpisz M lub F: ", "Schelter Manager", JOptionPane.INFORMATION_MESSAGE).toUpperCase().trim().charAt(0);
+                            animalName = JOptionPane.showInputDialog(null, "Wpisz nazwę zwierzaka. ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim();
+                            breed = JOptionPane.showInputDialog(null, "Wpisz rasę zwierzęcia", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim();
+                            sex = JOptionPane.showInputDialog(null, "Jakiej płci jest zwierzę? Wpisz M lub F: ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).toUpperCase().trim().charAt(0);
                             if (!(sex=='M') && !(sex=='F')){
-                                JOptionPane.showMessageDialog(null,"Wprowadziłeś błędną wartość!","Schelter Manager",JOptionPane.INFORMATION_MESSAGE);
+                                JOptionPane.showMessageDialog(null,"Wprowadziłeś błędną wartość!","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                                 break;
                             }
-                            health = Integer.parseInt(JOptionPane.showInputDialog(null, "Stan zdrowia zwierzaka? Wpisz liczbę w skali od 1 do 10: ", "Schelter Manager", JOptionPane.INFORMATION_MESSAGE).trim());
-                            if (!(health<=1 && health<=10)){
-                                JOptionPane.showMessageDialog(null,"Wprowadziłeś błędną wartość!","Schelter Manager",JOptionPane.INFORMATION_MESSAGE);
+                            health = Integer.parseInt(JOptionPane.showInputDialog(null, "Stan zdrowia zwierzaka? Wpisz liczbę w skali od 1 do 10: ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim());
+                            if (!(health>=1 && health<=10)){
+                                JOptionPane.showMessageDialog(null,"Wprowadziłeś błędną wartość!","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                                 break;
                             }
 
@@ -178,43 +169,43 @@ public class Version3 {
                         }
 
                         else {
-                                JOptionPane.showMessageDialog(null,"Nie można dodać tylu zwierzaków!","Schelter Manager",JOptionPane.INFORMATION_MESSAGE);
+                                JOptionPane.showMessageDialog(null,"Nie można dodać tylu zwierzaków!","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                                 break;
                             }
                         }
 
 
-                    // USUŃ
+                    // Delete
                     case 1: {
-                        amount= Integer.parseInt(JOptionPane.showInputDialog(null,"Ile zwierzaków odjąć? Wpisz liczbę: ","Schelter Manager",JOptionPane.INFORMATION_MESSAGE).trim());
+                        amount= Integer.parseInt(JOptionPane.showInputDialog(null,"Ile zwierzaków odjąć? Wpisz liczbę: ","Manager schroniska",JOptionPane.INFORMATION_MESSAGE).trim());
                         if (amount >= 0) {
                             if (actualAmount - amount < 0) {
-                                JOptionPane.showMessageDialog(null,"Nie ma tylu zwierzaków w schronisku!","Schelter Manager",JOptionPane.INFORMATION_MESSAGE);
+                                JOptionPane.showMessageDialog(null,"Nie ma tylu zwierzaków w schronisku!","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                                 break;
                             } else {
                                 actualAmount -= amount;
-                                JOptionPane.showMessageDialog(null,"Poprawnie odjęto. Liczba zwiarzaków w schronisku: " + actualAmount,"Schelter Manager",JOptionPane.INFORMATION_MESSAGE);
+                                JOptionPane.showMessageDialog(null,"Poprawnie odjęto. Liczba zwiarzaków w schronisku: " + actualAmount,"Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                                 save(actualAmount);
                                 break;
                             }
                         }
-                        else JOptionPane.showMessageDialog(null,"Podałeś liczbę ujemną! :)","Schelter Manager",JOptionPane.INFORMATION_MESSAGE);
+                        else JOptionPane.showMessageDialog(null,"Podałeś liczbę ujemną! :)","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                         break;
                     }
 
-                    //STATUS
+                    // STATUS
                     case 2: {
                         statusSQL(statement,con);
-                        JOptionPane.showMessageDialog(null,"Liczba zwierzaków w schronisku: " + actualAmount + "\nPojemność schroniska: " + capacity,"Schelter Manager",JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null,"Liczba zwierzaków w schronisku: " + actualAmount + "\nPojemność schroniska: " + capacity,"Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                         break;
                     }
                     default:
-                        JOptionPane.showMessageDialog(null,"Wpisałeś błędną wartość! ","Schelter Manager",JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null,"Wpisałeś błędną wartość! ","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                         break;
                 }
 
             } catch (Exception exc) {
-                JOptionPane.showMessageDialog(null,"Błędne dane wejściowe!","Schelter Manager",JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,"Błędne dane wejściowe!","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                 break;
             }
         }
