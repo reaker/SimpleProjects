@@ -1,11 +1,7 @@
 package ShelterManager;
 
-import org.omg.CORBA.PRIVATE_MEMBER;
-
 import javax.swing.*;
-import java.io.*;
 import java.sql.*;
-import java.util.Scanner;
 /**
  Created by sebastian on 2017-03-25.
 
@@ -17,6 +13,7 @@ import java.util.Scanner;
 
  + od samego siebie: zmieniam dostęp z pliku na bazę danych SQL.
  // Nie jest to doskonała wersja tego projektu, ale wszystkie funkcjonalności SĄ :)
+ // brakuje miejscami obsługi wyjątków
 
  Wariant 2
  To samo co poprzednio plus:
@@ -112,7 +109,7 @@ public class Version3 {
 
         String fname= "baza.txt";
 
-        String[] opcje =  { "Dodaj", "Usuń", "Status"};
+        String[] opcje =  { "Dodaj", "Usuń", "Status", "Edytuj"};
 
         while (true) {
 
@@ -121,7 +118,7 @@ public class Version3 {
                 String msg="Miejsc w schronisku: "+capacity + "\nIlość zwierzaków: "+actualAmount+"\nCo zrobić?";
                 int chooser = JOptionPane.showOptionDialog(null, msg,"Manager schroniska", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,null, opcje, opcje[0]);
 
-                // Case'y dla trzech wyborów
+                // Case's for 4 posibilities
                 if (chooser<0){return;}
                 switch (chooser) {
                     // Add
@@ -171,6 +168,32 @@ public class Version3 {
                         JOptionPane.showMessageDialog(null,"Liczba zwierzaków w schronisku: " + countSQL(statement)+ "\n Pojemność schroniska: " + capacity,"Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                         break;
                     }
+
+                    // Edit
+                    case 3: {
+                        // edit animal name
+                        id = Integer.parseInt(JOptionPane.showInputDialog(null, "Wpisz ID zwierzaka. ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim());
+                        ResultSet result = statement.executeQuery("select * from ShelterManager2 where id="+id);
+                        result.next();
+                        animalName = result.getString(2);
+                        animalName = JOptionPane.showInputDialog(null, "Obecna nazwa zwierzęcia: " + animalName + "\nWprowadź nową nazwę: ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE);
+
+                        //edit animal breed
+                        breed = result.getString(3);
+                        breed = JOptionPane.showInputDialog(null, "Obecna rasa zwierzęcia: " + breed + "\nWprowadź nową rasę: ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE);
+
+                        //edit animal sex
+                        sex = result.getString(4).charAt(0);
+                        sex = JOptionPane.showInputDialog(null, "Obecna płeć: " + sex + "\nWprowadź nową płeć: ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim().toUpperCase().charAt(0);
+
+                        //edit animal health
+                        health = Integer.parseInt(result.getString(5));
+                        health= Integer.parseInt(JOptionPane.showInputDialog(null, "Obecny poziom zdrowia: " + health + "\nWprowadź poziom zdrowia: ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE));
+
+                        // write all values into database
+                        statement.executeUpdate("update ShelterManager2 set AnimalName='" + animalName +"', Breed='" + breed + "', Sex='"+sex+"', Health='"+health+"' where ID=" + id);
+                        break;
+                    }
                     default:
                         JOptionPane.showMessageDialog(null,"Wpisałeś błędną wartość! ","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                         break;
@@ -178,6 +201,8 @@ public class Version3 {
 
             } catch (Exception exc) {
                 JOptionPane.showMessageDialog(null,"Błędne dane wejściowe!","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
+                exc.printStackTrace();
+
                 break;
             }
         }
