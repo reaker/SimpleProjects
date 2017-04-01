@@ -55,7 +55,7 @@ public class Version3 {
             System.exit(1);
         }
 
-        //creating tables
+        //creating tables if not exists
         Statement statement;
 
         statement = con.createStatement();
@@ -157,8 +157,6 @@ public class Version3 {
 
                     // Edit
                     case 3: {
-
-                        // Możliwość edycji poszczególnych zwierząt. Dodanie pól takich jak np. stan zdrowia, płeć itp.
 
                         // edit animal name
                         id = Integer.parseInt(JOptionPane.showInputDialog(null, "Wpisz ID zwierzaka. ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim());
