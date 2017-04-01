@@ -4,9 +4,6 @@ import javax.mail.MessagingException;
 import javax.swing.*;
 import java.sql.*;
 import java.util.Properties;
-import javax.mail.*;
-import javax.mail.internet.*;
-
 
 /**
  Created by sebastian on 2017-03-25.
@@ -37,70 +34,6 @@ import javax.mail.internet.*;
  */
 
 public class Version3 {
-
-
-    private static void insertSQL(Statement statement, String animalName, String breed, char sex, int health) throws SQLException{
-        statement.executeUpdate("Insert into ShelterManager2 values(null,'"+animalName+"','"+breed+"','"+sex+"'," +health+")");
-    }
-
-    private static void deleteSQL(Statement statement, int ID) throws SQLException{
-        statement.executeUpdate("Delete from ShelterManager2 where ID="+ID+";");
-    }
-
-    private static int countSQL(Statement statement) throws SQLException {
-        ResultSet rs = statement.executeQuery("select * from ShelterManager2");
-        int count = 0;
-        while (rs.next()) count++;
-        return count;
-    }
-
-    private static void statusSQL(Statement statement, Connection con) throws SQLException{
-       // new TableFromMySqlDatabase(con);
-        TableFromMySqlDatabase frame = new TableFromMySqlDatabase(con);
-        frame.setTitle("Manager Schroniska - baza danych");
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-    }
-
-    private static void sendEmail() throws MessagingException {
-
-        String to="sebastianwijas@gmail.com";
-
-        // Sender's email ID needs to be mentioned
-        String from = "sebastianwijas@gmail.com";
-
-        // Assuming you are sending email from localhost
-        String host = "smtp.gmail.com";
-
-        // Get system properties
-        Properties properties = System.getProperties();
-
-        // Setup mail server
-        properties.setProperty("smtp.gmail.com", host);
-
-        // Get the default Session object.
-        Session session = Session.getDefaultInstance(properties);
-
-            // Create a default MimeMessage object.
-            MimeMessage message = new MimeMessage(session);
-
-            // Set From: header field of the header.
-            message.setFrom(new InternetAddress(from));
-
-            // Set To: header field of the header.
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-
-            // Set Subject: header field
-            message.setSubject("This is the Subject Line!");
-
-            // Now set the actual message
-            message.setText("This is actual message");
-
-            // Send message
-            Transport.send(message);
-            System.out.println("Sent message successfully....");
-    }
 
     public static void main(String[] args) throws SQLException, MessagingException {
 
@@ -160,7 +93,7 @@ public class Version3 {
 
             try {
                 //MENU
-                String msg="Miejsc w schronisku: "+capacity + "\nIlość zwierzaków: "+countSQL(statement)+"\nCo zrobić?";
+                String msg="Miejsc w schronisku: "+capacity + "\nIlość zwierzaków: "+SQL.count(statement)+"\nCo zrobić?";
                 int chooser = JOptionPane.showOptionDialog(null, msg,"Manager schroniska", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,null, opcje, opcje[0]);
 
                 // Case's for 4 posibilities
@@ -169,10 +102,7 @@ public class Version3 {
 
                     // Add
                     case 0: {
-                        if ((countSQL(statement)+1)<capacity) {
-                            if (countSQL(statement)+1>=95){
-                                sendEmail();
-                            }//- Gdy schronisko ma mniej niż 5 wolnych miejsc wysyłany jest email infomarcyjny do osób pracujacych w schronisku
+                        if ((SQL.count(statement)+1)<capacity) {
 
                             animalName = JOptionPane.showInputDialog(null, "Wpisz nazwę zwierzaka. ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim();
                             breed = JOptionPane.showInputDialog(null, "Wpisz rasę zwierzęcia", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim();
@@ -187,7 +117,11 @@ public class Version3 {
                                 break;
                             }
 
-                            insertSQL(statement, animalName, breed, sex, health);
+                            SQL.insert(statement, animalName, breed, sex, health);
+
+                            //- Gdy schronisko ma mniej niż 5 wolnych miejsc wysyłany jest email infomarcyjny do osób pracujacych w schronisku (mail wysylany tylko za kazdym razem jak z liczby 94  przechodzimy na 95
+                            if (SQL.count(statement)==95) Mail.send();
+
                             break;
                         }
 
@@ -201,11 +135,11 @@ public class Version3 {
                     case 1: {
                         id = Integer.parseInt(JOptionPane.showInputDialog(null, "Wpisz ID zwierzaka. ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim());
 
-                        int countBefore=countSQL(statement);
+                        int countBefore=SQL.count(statement);
                         if (countBefore==0){JOptionPane.showMessageDialog(null,"Nie ma zwierzaków w schronisku.","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);break;}
 
-                        deleteSQL(statement,id);
-                        int countAfter=countSQL(statement);
+                        SQL.delete(statement,id);
+                        int countAfter=SQL.count(statement);
 
                         if (countAfter==countBefore) {JOptionPane.showMessageDialog(null,"Nie ma zwierzaka o takim ID.","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);break;}
 
@@ -216,13 +150,16 @@ public class Version3 {
 
                     // STATUS
                     case 2: {
-                        statusSQL(statement,con);
-                        JOptionPane.showMessageDialog(null,"Liczba zwierzaków w schronisku: " + countSQL(statement)+ "\n Pojemność schroniska: " + capacity,"Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
+                        SQL.status(statement,con);
+                        JOptionPane.showMessageDialog(null,"Liczba zwierzaków w schronisku: " + SQL.count(statement)+ "\n Pojemność schroniska: " + capacity,"Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
                         break;
                     }
 
                     // Edit
                     case 3: {
+
+                        // Możliwość edycji poszczególnych zwierząt. Dodanie pól takich jak np. stan zdrowia, płeć itp.
+
                         // edit animal name
                         id = Integer.parseInt(JOptionPane.showInputDialog(null, "Wpisz ID zwierzaka. ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE).trim());
                         ResultSet result = statement.executeQuery("select * from ShelterManager2 where id="+id);
@@ -241,6 +178,14 @@ public class Version3 {
                         //edit animal health
                         health = Integer.parseInt(result.getString(5));
                         health= Integer.parseInt(JOptionPane.showInputDialog(null, "Obecny poziom zdrowia: " + health + "\nWprowadź poziom zdrowia: ", "Manager schroniska", JOptionPane.INFORMATION_MESSAGE));
+
+                        //exceptions
+                        if (sex!='M' && sex!='F'){
+                            JOptionPane.showMessageDialog(null,"Podałeś błędne dane płci.","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
+                            break;}
+                        if (health<1 || health>10){
+                            JOptionPane.showMessageDialog(null,"Podałeś błędne dane stopnia zdrowia.","Manager schroniska",JOptionPane.INFORMATION_MESSAGE);
+                            break;}
 
                         // write all values into database
                         statement.executeUpdate("update ShelterManager2 set AnimalName='" + animalName +"', Breed='" + breed + "', Sex='"+sex+"', Health='"+health+"' where ID=" + id);
